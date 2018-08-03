@@ -11,7 +11,7 @@ bad_words = ["taxes"]
 
 # Iterate through the words in the tweet tweet_string
 for w in tweet_words:
-        print(w)
+        #print(w)
         if w in good_words:
             number_of_good_words += 1
         elif w in bad_words:
