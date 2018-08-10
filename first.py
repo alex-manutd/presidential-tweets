@@ -2,57 +2,72 @@
 # Author: Alex Zaslavsky (tutorial)
 # Description: Analyze the President's tweets to determine if they are presidential
 
-from nltk import word_tokenize
-from nltk.stem.porter import *
+"""
 
-stemmer = PortStemmer()
+To evaluate the good or bad score of a tweet, we first tokenize the tweet, and then
+stemmize each word in our tweet. We also associate each stem with positive and negative values,
+respectively, using a dictionary.
+Finally, we caculate the average word weight of a tweet, and decide if it's a good or bad one
+based on that.
+
+"""
+import json
+import html
+import twitter
+import time
+
+from nltk import word_tokenize, pos_tag
+from nltk.stem.porter import *
 
 # Split a tweet string into words METHOD
 def get_words(str):
-    return str.split()
+    useful_pos = {'NN'}
+    tokens = word_tokenize(str)
+    tags = pos_tag(tokens)
+    return [word for word, pos in tags if pos in useful_pos]
 
-# Word weight Dictionary
-word_weights = {"Thanks": 1.0, "historic": 0.5, "paychecks": 0.8, "taxes": -1.0}
+# Load a jason object from a file
+def load_json(json_file):
+    with open(json_file) as f:
+        return json.load(f)
 
 # Calculate the average value of words in list_of_words METHOD
-def get_average_word_weight(list_of_words):
+def get_average_word_weight(list_of_words, word_weights):
     number_of_words = len(list_of_words)
     sum_of_word_weights = 0.0
+    print (number_of_words)
+    if number_of_words == 0:
+            return 0.0
+    stemmer = PortStemmer()
+
+# Interate through the words in the tweet string
     for w in list_of_words:
-        if w in word_weights:
-            sum_of_word_weights += word_weights[w]
+        stemmed_word = stemmer.stem(w)
+        if stemmed_word in word_weights:
+            sum_of_word_weights += word_weights[stemmed_word]
 
     return sum_of_word_weights / number_of_words
 
-tweet_string = "Thanks to the historic TAX CUTS that I signed into law, your paychecks are going way UP, your taxes are going way DOWN, and America is once again OPEN FOR BUSINESS!"
+# Method to analyse the tweets using the word weight dictionary
+def analyse_tweet(tweet_string, word_weights):
+    words = get_words(tweet_string)
+    avg_tweet_weight = get_average_word_weight(words, word_weights)
+    print (tweet_string + ":" + str(avg_tweet_weight))
 
-words = get_words(tweet_string)
-avg_tweet_weight = get_average_word_weight(words)
+# Calls load_json() ie. dictionary
+word_weights = load_json("word_weights.json")
+credentials = load_json(".cred.json")
 
-print ("The weight of the tweet is " + str(avg_tweet_weight))
+#Connect to the twitter API
+twitter_api = twitter.Api(consumer_key=credentials["E8HyWxuCjZi2J7zYAx8VgOXCP"],
+                          consumer_secret=credentials["zSuLHDRyrmVur2wnNzcnsF2RlDcBKhrtnLCFzyocIyTD76ng7x"],
+                          access_token_key=credentials["35765427-lgx2pOsK3VwLspuWI8uzlBZLcjLtxXRgiAC91CVJY"],
+                          access_token_secret=credentials["CFog5yjs8ZEQ78tzUylpqQEvjoxhOa83MO5bFQJUSDIFn"],
+                          tweet_mode='extended')
 
-if avg_tweet_weight > 0:
-    print ("What a presidential thing to say! HUGE!")
-else:
-    print ("Surely you are joking, Mr. Trump! SAD!")
+# Load the last 10 status updates of Donald Trump
+statuses = twitter_api.GetUserTimeLine(screen_name="realDonaldTrump", count=10)
 
-# Iterate through the words in the tweet tweet_string
-# for w in tweet_words:
-#         #print(w)
-#        if w in good_words:
-#            number_of_good_words += 1
-#        elif w in bad_words:
-#            number_of_bad_words += 1
-
-#print ("There are " + str(number_of_good_words) + " #good words in this tweet")
-#print ("There are " + str(number_of_bad_words) + " bad #words in this tweet")
-
-#print (tweet_words)
-#print ("Number of words in this tweet is: " + #str(number_of_words))
-
-#Iterate through the words in the tweet tweet_string
-#print ("Words in the tweet are:")
-#for w in tweet_words:
-#    len_of_w = len(w)
-#    print("number of letters in " + w + " is " + #str(len_of_w) )
-#print ("End of the words in the tweet")
+# Iterate through them and analyse them
+for status in statuses:
+    analyse_tweet(html.unescape(status.full_text), word_weights)
