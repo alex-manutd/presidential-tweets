@@ -13,34 +13,34 @@ import time
 from nltk import word_tokenize, pos_tag
 from nltk.stem.porter import *
 
-# Split a tweet string into words METHOD
+# Break down a string into words
 def get_words(str):
-    useful_pos = {'NN'}
-    tokens = word_tokenize(str)
-    tags = pos_tag(tokens)
-    return [word for word, pos in tags if pos in useful_pos]
+	useful_pos = {'NN'}
+	tokens = word_tokenize(str)
+	tags = pos_tag(tokens)
+	return [word for word, pos in tags if pos in useful_pos]
 
 missing_words = {}
 
-# Calculate the average value of words in list_of_words METHOD
+# Calculate the average value of words in list_of_words
 def get_average_word_weight(list_of_words, word_weights):
-    number_of_words = len(list_of_words)
-    sum_of_word_weights = 0.0
-    print (number_of_words)
-    if number_of_words == 0:
-        return 0.0
-    stemmer = PorterStemmer()
-    # Interate through the words in the tweet string
-    for w in list_of_words:
-        stemmed_word = stemmer.stem(w)
-        if stemmed_word in word_weights:
-            sum_of_word_weights += word_weights[stemmed_word]
-        else:
-            missing_words[stemmed_word] = 0.0
+	number_of_words = len(list_of_words)
+	sum_of_word_weights = 0.0
+	print (number_of_words)
+	if number_of_words == 0:
+		return 0.0
+	stemmer = PorterStemmer()
+	# Iterate through the words in the tweet string
+	for w in list_of_words:
+	    stemmed_word = stemmer.stem(w)
+	    if stemmed_word in word_weights:
+	        sum_of_word_weights += word_weights[stemmed_word]
+	    else:
+	        missing_words[stemmed_word] = 0.0
 
-    return sum_of_word_weights / number_of_words
+	return sum_of_word_weights / number_of_words
 
-def analyse_tweet(tweet_string, word_weights):
+def anaylse_tweet(tweet_string, word_weights):
 	words = get_words(tweet_string)
 	avg_tweet_weight = get_average_word_weight(words, word_weights)
 	print (tweet_string + ":" + str(avg_tweet_weight))
@@ -55,15 +55,14 @@ word_weights = load_json("word_weights.json")
 credentials = load_json(".cred.json")
 
 api = twitter.Api(consumer_key=credentials["consumer_key"],
-                  consumer_secret=credentials["consumer_secret"],
+				  consumer_secret=credentials["consumer_secret"],
                   access_token_key=credentials["access_token_key"],
                   access_token_secret=credentials["access_token_secret"],
                   tweet_mode='extended')
 
-# Load the last 10 status updates of Donald Trump
 statuses = api.GetUserTimeline(screen_name="realDonaldTrump", count=10)
 for status in statuses:
-    analyse_tweet(html.unescape(status.full_text), word_weights)
-    prev_status = status.full_text
+	anaylse_tweet(html.unescape(status.full_text), word_weights)
+	prev_status = status.full_text
 
 print (missing_words)
