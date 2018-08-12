@@ -1,6 +1,0 @@
-Access token & access token secret
-35765427-lgx2pOsK3VwLspuWI8uzlBZLcjLtxXRgiAC91CVJY (Access token)
-
-CFog5yjs8ZEQ78tzUylpqQEvjoxhOa83MO5bFQJUSDIFn (Access token secret)
-
-Read and write (Access level)
